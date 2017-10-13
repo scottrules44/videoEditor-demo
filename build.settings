@@ -1,0 +1,15 @@
+--
+-- For more information on build.settings see the Corona Build Guide at:
+-- http://docs.coronalabs.com/guide/distribution/buildSettings/index.html
+--
+
+settings = 
+{
+     plugins =
+    {
+        ["plugin.videoEditor"] =
+        {
+            publisherId = "tech.scotth"
+        },
+    },
+}
