@@ -3,6 +3,7 @@ local json = require "json"
 local widget = require( "widget" )
 --
 local showTrimVideo
+local showCropVideo
 --
 local function doesFileExist( fname, path )
  
@@ -87,19 +88,40 @@ local myVideoUrl = system.pathForFile( "myVideo.m4v", system.DocumentsDirectory 
 local outputHalfVideo = system.pathForFile( "trimVideo.mp4", system.DocumentsDirectory )
 local snapshotOfFirstSecond = system.pathForFile( "firstSecond.png", system.DocumentsDirectory )
 local videoInfo = videoEditor.getVideoInfo(myVideoUrl)
+local cropUrl = system.pathForFile( "cropVideo.mp4", system.DocumentsDirectory )
 --
 print( "Video Info" )
 print( "--------------------------" )
 print(json.encode(videoInfo))
 print( "--------------------------" )
 os.remove( outputHalfVideo )
-videoEditor.trim(myVideoUrl, 1, videoInfo.duration/2, outputHalfVideo, function ( e )
-    print(json.encode(e))
-	if (e.isError == false) then
-		showTrimVideo.alpha = 1
-	end
-end)
-videoEditor.createThumbnail(myVideoUrl, snapshotOfFirstSecond, 1, videoInfo.width, videoInfo.height, 100)
+os.remove( cropUrl )
+
+showCropVideo = widget.newButton( {
+    label = "Show Croped Video",
+    id = "showHalfVideo",
+    onRelease = function ( )
+        media.playVideo( "cropVideo.mp4", system.DocumentsDirectory, true )
+    end
+} )
+showCropVideo.x, showCropVideo.y = display.contentCenterX, display.contentCenterY -100
+showCropVideo.alpha = 0
+
+if (videoInfo) then
+    videoEditor.trim(myVideoUrl, 1, videoInfo.duration/2, outputHalfVideo, function ( e )
+        print(json.encode(e))
+        if (e.isError == false) then
+            showTrimVideo.alpha = 1
+        end
+    end)
+    videoEditor.createThumbnail(myVideoUrl, snapshotOfFirstSecond, 1, videoInfo.width, videoInfo.height, 100)
+    videoEditor.cropVideo(myVideoUrl, cropUrl, 200, 200, function(e)
+        if (e.isError == false) then
+            showCropVideo.alpha = 1
+        end
+    end)
+end
+
 --
 showTrimVideo = widget.newButton( {
 	label = "Show Half Video",
@@ -111,9 +133,15 @@ showTrimVideo = widget.newButton( {
 showTrimVideo.x, showTrimVideo.y = display.contentCenterX, display.contentCenterY -50
 showTrimVideo.alpha = 0
 
+
+
 timer.performWithDelay( 1000, function (  )
-	local thumbnail = display.newImageRect( "firstSecond.png", system.DocumentsDirectory, videoInfo.width, videoInfo.height )
-	thumbnail:scale( .3, .3 )
-	thumbnail.x, thumbnail.y = display.contentCenterX, display.contentCenterY +100
+    if (videoInfo) then
+        local thumbnail = display.newImageRect( "firstSecond.png", system.DocumentsDirectory, videoInfo.width, videoInfo.height )
+        thumbnail:scale( .3, .3 )
+        thumbnail.x, thumbnail.y = display.contentCenterX, display.contentCenterY +100
+            
+    end
+	
 end )
 
